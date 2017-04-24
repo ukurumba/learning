@@ -42,9 +42,8 @@ class Node():
 		else:
 			wx = self.weights[-1] #bias weight
 			for key in xvals:
-				print(self.index,wx)
-				wx += xvals[key] * self.weights[key]
-			print(self.index,wx)
+				if key in self.weights:
+					wx += xvals[key] * self.weights[key]
 		return 1 / (1 + exp(-wx))
 
 	def set_weights(self,new_weights):
@@ -108,11 +107,9 @@ class NN():
 		deltas = {}
 		random_output = rd.choice(list(self.layers[-1].values())) #just getting the input nodes to the output layer
 		prev_avals = {i:avals[i] for i in random_output.get_inputs()}
-		print('outputkeys',self.outputkeys)
 		for i,key in zip(range(len(yvals)),self.outputkeys):
 			avals[key] = self.layers[-1][key].propagate(prev_avals)
 			deltas[key] = (yvals[i] - avals[key])*avals[key]*(1-avals[key])
-			print('outputkey',key)
 		return deltas,avals
 
 	def propagate_deltas(self,deltas,avals):
@@ -123,18 +120,14 @@ class NN():
 			for l in range(len(self.layers)-2,0,-1): # for every hidden layer iterating backwards
 				if l == len(self.layers)-2:  #if it's not the last hidden layer (for indexing purposes)
 					outputs = self.outputkeys
-					print('outputs',outputs)
 				else:
-					outputs = self.layers[l+2].values()[0].get_inputs() #gets inputs to a node 2 layers down
-				print('outputs',outputs)
+					random_key = rd.choice(list(self.layers[l+2].keys())) #gets key of a node 2 layers down
+					outputs = self.layers[l+2][random_key].get_inputs() #gets inputs from this node, i.e. outputs of current node
 				for node in self.layers[l].values():
 					deltas[node.get_index()] = 0
-					print('deltas',deltas)
 					for key in outputs: #adds the delta_k * weight_jk value for each output k
-						print(key)
 						deltas[node.get_index()] += deltas[key] * self.layers[l+1][key].get_weight(node.get_index())
 					deltas[node.get_index()] *= avals[node.get_index()] * (1-avals[node.get_index()])
-			print('deltas',deltas)
 
 			return deltas
 
@@ -178,6 +171,17 @@ class NN():
 			deltas,avals = self.train_output_nodes(avals,y)
 			deltas = self.propagate_deltas(deltas,avals)
 			self.update_weights(deltas,avals)
+
+	def propagate(self,xvals):
+		avals = self.train
+
+	def predict(self,xvals):
+		'''returns the predictions for the given xvals on a trained NN. xvals should be a list of lists.'''
+		outputs = []
+		for X in xvals:
+
+
+
 
 
 
