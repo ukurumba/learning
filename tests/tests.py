@@ -74,4 +74,88 @@ def test_train_hidden():
 	assert avals[6] == 1 / (1 + exp(-(1+.3*5)))
 	assert avals[7] == 1 / (1 + exp(-(1+.8 * avals[6])))
 
+def test_train_output():
+	nn1 = nn.NN(2,1,1,2) 
+	x1 = [1,2]
+	y1 = [1]
+	new_weights = {0:0.5,1:0.5}
+	new_weights4 = {2:0.7,3:0.5}
+	nn1.set_weights(1,2,new_weights)
+	nn1.set_weights(1,3,new_weights)
+	nn1.set_weights(2,4,new_weights4)
+	avals = nn1.train_input_nodes(x1)
+	avals = nn1.train_hidden_nodes(avals)
+	deltas,avals = nn1.train_output_nodes(avals,y1)
+	ak = 1/(1+exp(-(1 + 1.2 * 1/(1+exp(-2.5)))))
+	assert avals[4] == ak
+	assert deltas[4] == ak*(1-ak)*(1-ak)
+
+def test_propagate_deltas():
+	nn1 = nn.NN(2,2,1,2) 
+	x1 = [1,2]
+	y1 = [1,1]
+	new_weights = {0:0.5,1:0.5}
+	new_weights4 = {2:0.7,3:0.5}
+	nn1.set_weights(1,2,new_weights)
+	nn1.set_weights(1,3,new_weights)
+	nn1.set_weights(2,4,new_weights4)
+	nn1.set_weights(2,5,new_weights4)
+	avals = nn1.train_input_nodes(x1)
+	avals = nn1.train_hidden_nodes(avals)
+	deltas,avals = nn1.train_output_nodes(avals,y1)
+	deltas = nn1.propagate_deltas(deltas,avals)
+	ak = 1/(1+exp(-(1 + 1.2 * 1/(1+exp(-2.5)))))
+	delta = ak*(1-ak)*(1-ak)
+	assert deltas[4] == delta
+	assert deltas[2] == 1.4 * delta * avals[2] * (1-avals[2])
+	assert abs(deltas[3] - 1.0 * delta * avals[3] * (1-avals[3])) < .00000000001
+
+def test_update_weights():
+	nn1 = nn.NN(2,2,1,2) 
+	x1 = [1,2]
+	y1 = [1,1]
+	new_weights = {0:0.5,1:0.5}
+	new_weights4 = {2:0.7,3:0.5}
+	nn1.set_weights(1,2,new_weights)
+	nn1.set_weights(1,3,new_weights)
+	nn1.set_weights(2,4,new_weights4)
+	nn1.set_weights(2,5,new_weights4)
+	avals = nn1.train_input_nodes(x1)
+	avals = nn1.train_hidden_nodes(avals)
+	deltas,avals = nn1.train_output_nodes(avals,y1)
+	deltas = nn1.propagate_deltas(deltas,avals)
+	nn1.update_weights(deltas,avals)
+	ak = 1/(1+exp(-(1 + 1.2 * 1/(1+exp(-2.5)))))
+	delta = ak*(1-ak)*(1-ak)
+	delta2 = 1.4 * delta * (1-avals[2]) * avals[2]
+	layers = nn1.get_layers()
+	assert deltas[2] == delta2
+	assert abs(layers[1][2].get_weight(1) - (.5+ .1*delta2*x1[1])) < .00000001
+	assert abs(layers[1][2].get_weight(-1) - (1 + .1*delta2 * 1)) < .00000001
+
+def test_train():
+	nn1 = nn.NN(2,2,1,2) 
+	x1 = [[1,2]]
+	y1 = [[1,1]]
+	new_weights = {0:0.5,1:0.5}
+	new_weights4 = {2:0.7,3:0.5}
+	nn1.set_weights(1,2,new_weights)
+	nn1.set_weights(1,3,new_weights)
+	nn1.set_weights(2,4,new_weights4)
+	nn1.set_weights(2,5,new_weights4)
+	nn1.train(x1,y1)
+	ak = 1/(1+exp(-(1 + 1.2 * 1/(1+exp(-2.5)))))
+	delta = ak*(1-ak)*(1-ak)
+	avals2 = 1 / (1 + exp(-1*(1+1+.5)))
+	delta2 = 1.4 * delta * (1-avals2) * avals2
+	layers = nn1.get_layers()
+	assert abs(layers[1][2].get_weight(1) - (.5+ .1*delta2*x1[0][1])) < .00000001
+	assert abs(layers[1][2].get_weight(-1) - (1 + .1*delta2 * 1)) < .00000001
+
+
+
+
+
+
+
 
