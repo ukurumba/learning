@@ -85,7 +85,7 @@ def test_train_output():
 	nn1.set_weights(2,4,new_weights4)
 	avals = nn1.train_input_nodes(x1)
 	avals = nn1.train_hidden_nodes(avals)
-	deltas,avals = nn1.train_output_nodes(avals,y1)
+	deltas,avals = nn1.train_output_nodes(avals,yvals=y1)
 	ak = 1/(1+exp(-(1 + 1.2 * 1/(1+exp(-2.5)))))
 	assert avals[4] == ak
 	assert deltas[4] == ak*(1-ak)*(1-ak)
@@ -102,7 +102,7 @@ def test_propagate_deltas():
 	nn1.set_weights(2,5,new_weights4)
 	avals = nn1.train_input_nodes(x1)
 	avals = nn1.train_hidden_nodes(avals)
-	deltas,avals = nn1.train_output_nodes(avals,y1)
+	deltas,avals = nn1.train_output_nodes(avals,yvals=y1)
 	deltas = nn1.propagate_deltas(deltas,avals)
 	ak = 1/(1+exp(-(1 + 1.2 * 1/(1+exp(-2.5)))))
 	delta = ak*(1-ak)*(1-ak)
@@ -122,7 +122,7 @@ def test_update_weights():
 	nn1.set_weights(2,5,new_weights4)
 	avals = nn1.train_input_nodes(x1)
 	avals = nn1.train_hidden_nodes(avals)
-	deltas,avals = nn1.train_output_nodes(avals,y1)
+	deltas,avals = nn1.train_output_nodes(avals,yvals=y1)
 	deltas = nn1.propagate_deltas(deltas,avals)
 	nn1.update_weights(deltas,avals)
 	ak = 1/(1+exp(-(1 + 1.2 * 1/(1+exp(-2.5)))))
@@ -152,6 +152,16 @@ def test_train():
 	assert abs(layers[1][2].get_weight(1) - (.5+ .1*delta2*x1[0][1])) < .00000001
 	assert abs(layers[1][2].get_weight(-1) - (1 + .1*delta2 * 1)) < .00000001
 
+def test_kfold():
+	a = [[1],[2,33],[3],[4],[5],[6],[7],[8],[9]]
+	b = nn.kfold(a,4)
+	assert b[0] == [[1],[2,33]]
+	assert b[3] == [[7],[8],[9]]
+
+def test_combine():
+	a = [[1,2],[3,4]]
+	b = nn.combine(a)
+	assert b == [1,2,3,4]
 
 
 

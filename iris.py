@@ -1,5 +1,6 @@
 import src.neural_networks as nn 
-
+import numpy as np 
+import random as rd
 with open('./examples/iris.txt' ,'r') as file:
 	data = []
 	for line in file:
@@ -7,27 +8,80 @@ with open('./examples/iris.txt' ,'r') as file:
 	data = data[:-1] #get rid of end newline
 
 data = [data[i].split(',') for i in range(len(data))]
-inputs = [[float(j) for j in i[0:4]] for i in data]
-names = [i[4] for i in data]
-targets = []
+rd.shuffle(data)
+ksplit = nn.kfold(data,k=6)
+totalacc = 0
+data = ksplit
+for i,k in enumerate(ksplit):
+	tune = data[i]
+	train = [j for j in data if j != i]
+	train = nn.combine(train)
+	trainnames = [i[4] for i in train]
+	train = [[float(j) for j in i[0:4]] for i in train]
 
-for name in names:
-	if name == 'Iris-versicolor':
-		targets.append([1,0,0])
-	elif name == 'Iris-virginica':
-		targets.append([0,1,0])
-	elif name == 'Iris-setosa':
-		targets.append([0,0,1])
+	tunenames = [i[4] for i in tune]
+	tune = [[float(j) for j in i[0:4]] for i in tune]
+	traintargets = []
+	tunetargets = []
+	for name in trainnames:
+		if name == 'Iris-versicolor':
+			traintargets.append([1,0,0])
+		elif name == 'Iris-virginica':
+			traintargets.append([0,1,0])
+		elif name == 'Iris-setosa':
+			traintargets.append([0,0,1])
+	for name in tunenames:
+		if name == 'Iris-versicolor':
+			tunetargets.append([1,0,0])
+		elif name == 'Iris-virginica':
+			tunetargets.append([0,1,0])
+		elif name == 'Iris-setosa':
+			tunetargets.append([0,0,1])
+	nn1 = nn.NN(4,3,1,7)
+	for i in range(100):
+		nn1.train(train,traintargets)
+	outputs = nn1.predict(tune)
+	outputs = nn.threshold(outputs)
+	acc = nn.accuracy(outputs,tunetargets)
+	print('Accuracy',acc)
+	totalacc += acc
+totalacc /= len(ksplit)
+print('Average Accuracy:', totalacc)
 
-#select first 50 for tuning, last 100 for training
 
-tune_data = inputs[0:50]
-train_data = inputs[50:]
-tune_targets = targets[0:50]
-train_targets = targets[50:]
 
-nn1 = nn.NN(4,2,4,3)
-nn1.train(train_data,train_targets)
+
+
+
+# #select first 50 for tuning, last 100 for training
+
+# indices = [i for i in range(150)]
+# random_indices = np.random.choice(indices,50,replace=False)
+# tune_data = []
+# train_data = []
+# tune_targets = []
+# train_targets = []
+# for index in range(150):
+# 	if index in random_indices:
+# 		tune_data.append(inputs[index])
+# 		tune_targets.append(targets[index])
+# 	else:
+# 		train_data.append(inputs[index])
+# 		train_targets.append(targets[index])
+
+# print(train_targets)
+# print('Shape Tune',len(tune_data),'First element',len(tune_data[0]))
+# print('Shape train',len(train_data),'First element',len(train_data[0]))
+
+# nn1 = nn.NN(4,3,1,7)
+# for i in range(100):
+# 	nn1.train(train_data,train_targets)
+
+# outputs = nn1.predict(tune_data)
+# print(outputs)
+# outputs = nn.threshold(outputs)
+# acc = nn.accuracy(outputs,tune_targets)
+# print('Accuracy',acc)
 
 
 

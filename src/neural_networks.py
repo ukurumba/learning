@@ -15,12 +15,12 @@ class Node():
 				self.index = node_index
 			else:
 				self.node_type = 'non-input'
-				self.weights = collections.OrderedDict()
+				self.weights = {}
 				self.weights[-1] = 1
 				for i in input_indices:
 					if i < 0:
 						raise ValueError('Indices must be greater than or equal to 0')
-					self.weights[i] = rd.random()
+					self.weights[i] = rd.uniform(0,0.5)
 				self.inputs = input_indices
 				self.index = node_index
 
@@ -102,15 +102,25 @@ class NN():
 				prev_avals = copy.copy(new_avals)
 		return avals
 
-	def train_output_nodes(self,avals,yvals):
+	def train_output_nodes(self,avals,yvals=None):
 		#this fx returns the deltas from the output nodes
-		deltas = {}
-		random_output = rd.choice(list(self.layers[-1].values())) #just getting the input nodes to the output layer
-		prev_avals = {i:avals[i] for i in random_output.get_inputs()}
-		for i,key in zip(range(len(yvals)),self.outputkeys):
-			avals[key] = self.layers[-1][key].propagate(prev_avals)
-			deltas[key] = (yvals[i] - avals[key])*avals[key]*(1-avals[key])
-		return deltas,avals
+		if yvals != None:
+			deltas = {}
+			random_output = rd.choice(list(self.layers[-1].values())) #just getting the input nodes to the output layer
+			prev_avals = {i:avals[i] for i in random_output.get_inputs()}
+			for i,key in zip(range(len(yvals)),self.outputkeys):
+				avals[key] = self.layers[-1][key].propagate(prev_avals)
+				deltas[key] = (yvals[i] - avals[key])*avals[key]*(1-avals[key])
+			return deltas,avals
+		else:
+			random_output = rd.choice(list(self.layers[-1].values())) #just getting the input nodes to the output layer
+			prev_avals = {i:avals[i] for i in random_output.get_inputs()}
+			outputs = []
+			for key in self.outputkeys:
+				avals[key] = self.layers[-1][key].propagate(prev_avals)
+				outputs.append(self.layers[-1][key].propagate(prev_avals))
+			return outputs
+
 
 	def propagate_deltas(self,deltas,avals):
 		#this function computes the deltas for every node
@@ -138,7 +148,7 @@ class NN():
 					node.set_weight(inkey,node.get_weight(inkey) + self.alpha * avals[inkey] * deltas[key])
 				node.set_weight(-1,node.get_weight(-1) + self.alpha * deltas[key])
 
-	def train(self,xvals,yvals):
+	def train(self,xvals,yvalues):
 		''' This function trains the neural network on the given input data, utilizing the backtracking algorithm.
 
 		Inputs
@@ -146,7 +156,7 @@ class NN():
 
 		xvals : list of lists (each list is a set of xvalues of length equal to the number of input nodes)
 
-		yvals : list of lists (each list is a set of yvals of length equal to the number of output nodes)
+		yvalues : list of lists (each list is a set of yvals of length equal to the number of output nodes)
 
 		Example
 		-------
@@ -164,21 +174,72 @@ class NN():
 		-------
 
 		None '''
-
-		for X,y in zip(xvals,yvals):
+		self.alpha=.1
+		for X,y in zip(xvals,yvalues):
 			avals = self.train_input_nodes(X)
 			avals = self.train_hidden_nodes(avals)
-			deltas,avals = self.train_output_nodes(avals,y)
+			deltas,avals = self.train_output_nodes(avals,yvals=y)
 			deltas = self.propagate_deltas(deltas,avals)
 			self.update_weights(deltas,avals)
-
+		# import matplotlib.pyplot as plt 
+		# plt.plot([i for i in range(100)],errors)
+		# plt.title('Number of Layers: {} Number of Nodes per layer: {}'.format(len(self.layers)-2,len(self.layers[0])))
+		# plt.savefig('./examples/{}_layers_{}_per.jpg'.format(len(self.layers)-2,len(self.layers[0])))
 	def propagate(self,xvals):
-		avals = self.train
+		avals = self.train_input_nodes(xvals)
+		avals = self.train_hidden_nodes(avals)
+		output = self.train_output_nodes(avals)
+		return output
+
+
 
 	def predict(self,xvals):
 		'''returns the predictions for the given xvals on a trained NN. xvals should be a list of lists.'''
 		outputs = []
 		for X in xvals:
+			outputs.append(self.propagate(X))
+
+		return outputs
+
+def threshold(outputs):
+	new_outputs = []
+	for output in outputs:
+		temp = [0,0,0]
+		temp[output.index(max(output))] = 1
+		new_outputs.append(temp)
+	return new_outputs
+
+def accuracy(outputs, actuals):
+	count = 0
+	for output,actual in zip(outputs,actuals):
+		if output == actual:
+			count += 1
+	return count / len(outputs)
+
+def kfold(data, k=10):
+	sample_size = len(data) // k
+	ksplits = []
+	prev_index = 0
+	for i in range(k):
+		if i != k-1:
+			ksplits.append(data[prev_index:prev_index+sample_size][:])
+		else:
+			ksplits.append(data[prev_index:][:])
+		prev_index += sample_size
+	return ksplits
+
+def combine(data):
+	new = []
+	for i in data:
+		for j in i:
+			new.append(j)
+	return new
+
+
+
+
+
+
 
 
 
