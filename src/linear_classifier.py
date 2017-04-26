@@ -2,14 +2,14 @@ import random as rd
 from math import exp 
 
 class LC():
-	def __init__.py(self,num_inputs,threshold):
+	def __init__(self,num_inputs,threshold):
 		if threshold != 'perceptron' and threshold != 'logistic':
 			raise ValueError('Threshold argument must be either perceptron or logistic.')
 		if type(num_inputs)!=int:
 			raise TypeError('Number of inputs must be an integer')
 		if num_inputs <= 0:
 			raise ValueError('Number of inputs must be greater than 0')
-		weights = {-1:rd.uniform(0,0.5)} #random bias weight
+		self.weights = {-1:rd.uniform(0,0.5)} #random bias weight
 		for i in range(num_inputs):	
 			self.weights[i] = rd.uniform(0,0.5)
 		self.threshold = threshold
@@ -19,9 +19,9 @@ class LC():
 		wx = self.weights[-1]
 		for i,val in enumerate(xvals):
 			wx += self.weights[i] * val
-		return self.threshold(wx)
+		return self.threshold_fx(wx)
 
-	def threshold(self,wx):
+	def threshold_fx(self,wx):
 		if self.threshold == 'perceptron':
 			if wx <0:
 				return 0
