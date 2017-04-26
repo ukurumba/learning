@@ -15,9 +15,9 @@ ksplit = nn.kfold(data,k=6)
 totalacc = 0
 totaltime = 0
 data = ksplit
-for i,k in enumerate(ksplit):
-	tune = data[i]
-	train = [j for j in data if j != i]
+for l,k in enumerate(ksplit):
+	tune = data[l]
+	train = [j for j in data if j != l]
 	train = nn.combine(train)
 	trainnames = [i[4] for i in train]
 	train = [[float(j) for j in i[0:4]] for i in train]
@@ -42,20 +42,21 @@ for i,k in enumerate(ksplit):
 			tunetargets.append([0,0,1])
 	nn1 = nn.NN(4,3,1,7)
 	start = time.time()
-	for i in range(l):
+	for i in range(100):
 		nn1.train(train,traintargets)
 	end = time.time()
 	totaltime += end-start
 	outputs = nn1.predict(tune)
 	outputs = nn.threshold(outputs)
 	acc = nn.accuracy(outputs,tunetargets)
+	print('Fold No.:',l+1)
 	print('Accuracy:',acc)
 	print('Time:',end-start)
 	totalacc += acc
 totalacc /= len(ksplit)
 totaltime /= len(data)
 print('Average Accuracy:', totalacc)
-print('Average Time: ',totaltime/len(data))
+print('Average Time: ',totaltime)
 
 
 

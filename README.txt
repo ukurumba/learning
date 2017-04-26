@@ -16,5 +16,7 @@ python3 earthquake_clean.py perceptron
 python3 earthquake_clean.py logistic
 python3 earthquake_noisy.py perceptron
 python3 earthquake_noisy.py logistic
+python3 lc_fraud.py perceptron
+python3 lc_fraud.py logistic
 
 ------------------------------------------------
