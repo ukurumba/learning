@@ -1,6 +1,7 @@
 import src.neural_networks as nn 
 import numpy as np 
 import random as rd
+import time
 with open('./examples/iris.txt' ,'r') as file:
 	data = []
 	for line in file:
@@ -10,43 +11,59 @@ with open('./examples/iris.txt' ,'r') as file:
 data = [data[i].split(',') for i in range(len(data))]
 rd.shuffle(data)
 ksplit = nn.kfold(data,k=6)
-totalacc = 0
-data = ksplit
-for i,k in enumerate(ksplit):
-	tune = data[i]
-	train = [j for j in data if j != i]
-	train = nn.combine(train)
-	trainnames = [i[4] for i in train]
-	train = [[float(j) for j in i[0:4]] for i in train]
 
-	tunenames = [i[4] for i in tune]
-	tune = [[float(j) for j in i[0:4]] for i in tune]
-	traintargets = []
-	tunetargets = []
-	for name in trainnames:
-		if name == 'Iris-versicolor':
-			traintargets.append([1,0,0])
-		elif name == 'Iris-virginica':
-			traintargets.append([0,1,0])
-		elif name == 'Iris-setosa':
-			traintargets.append([0,0,1])
-	for name in tunenames:
-		if name == 'Iris-versicolor':
-			tunetargets.append([1,0,0])
-		elif name == 'Iris-virginica':
-			tunetargets.append([0,1,0])
-		elif name == 'Iris-setosa':
-			tunetargets.append([0,0,1])
-	nn1 = nn.NN(4,3,1,7)
-	for i in range(100):
-		nn1.train(train,traintargets)
-	outputs = nn1.predict(tune)
-	outputs = nn.threshold(outputs)
-	acc = nn.accuracy(outputs,tunetargets)
-	print('Accuracy',acc)
-	totalacc += acc
-totalacc /= len(ksplit)
-print('Average Accuracy:', totalacc)
+accs = []
+times=[]
+for l in [2000,3000]:
+	totalacc = 0
+	totaltime = 0
+	data = ksplit
+	for i,k in enumerate(ksplit):
+		tune = data[i]
+		train = [j for j in data if j != i]
+		train = nn.combine(train)
+		trainnames = [i[4] for i in train]
+		train = [[float(j) for j in i[0:4]] for i in train]
+
+		tunenames = [i[4] for i in tune]
+		tune = [[float(j) for j in i[0:4]] for i in tune]
+		traintargets = []
+		tunetargets = []
+		for name in trainnames:
+			if name == 'Iris-versicolor':
+				traintargets.append([1,0,0])
+			elif name == 'Iris-virginica':
+				traintargets.append([0,1,0])
+			elif name == 'Iris-setosa':
+				traintargets.append([0,0,1])
+		for name in tunenames:
+			if name == 'Iris-versicolor':
+				tunetargets.append([1,0,0])
+			elif name == 'Iris-virginica':
+				tunetargets.append([0,1,0])
+			elif name == 'Iris-setosa':
+				tunetargets.append([0,0,1])
+		nn1 = nn.NN(4,3,1,7)
+		start = time.time()
+		for i in range(l):
+			nn1.train(train,traintargets)
+		end = time.time()
+		totaltime += end-start
+		outputs = nn1.predict(tune)
+		outputs = nn.threshold(outputs)
+		acc = nn.accuracy(outputs,tunetargets)
+		print('Accuracy:',acc)
+		print('Time:',end-start)
+		totalacc += acc
+	totalacc /= len(ksplit)
+	totaltime /= len(data)
+	print('Average Accuracy:', totalacc)
+	print('Average Time: ',totaltime/len(data))
+	accs.append(totalacc)
+	times.append(totaltime)
+print(l)
+print(accs)
+print(times)
 
 
 

@@ -204,7 +204,7 @@ class NN():
 def threshold(outputs):
 	new_outputs = []
 	for output in outputs:
-		temp = [0,0,0]
+		temp = [0 for i in range(len(output))]
 		temp[output.index(max(output))] = 1
 		new_outputs.append(temp)
 	return new_outputs
