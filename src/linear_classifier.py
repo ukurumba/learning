@@ -53,6 +53,13 @@ class LC():
 			outputs.append(self.propagate(x))
 		return outputs
 
+def log_threshold(outputs):
+	for i,val in enumerate(outputs):
+		if val >= .5:
+			outputs[i] = 1
+		else:
+			outputs[i] = 0
+	return outputs
 
 
 

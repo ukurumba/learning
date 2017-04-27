@@ -34,8 +34,7 @@ for i in range(len(data)):
 	totaltime += end-start
 	outputs = lc1.predict(tune)
 	if sys.argv[1] == 'logistic':
-		outputs = nn.threshold([[i] for i in outputs])
-		outputs = [i[0] for i in outputs]
+		outputs = lc.log_threshold(outputs)
 	acc = nn.accuracy(outputs,tuneages)
 	print('Accuracy',acc)
 	totalacc += acc

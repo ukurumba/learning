@@ -23,8 +23,7 @@ for i in range(len(data)):
 		lc1.train(train,trainnames)
 	outputs = lc1.predict(tune)
 	if sys.argv[1] == 'logistic':
-		outputs = nn.threshold([[i] for i in outputs])
-		outputs = [i[0] for i in outputs]
+		outputs = lc.log_threshold(outputs)
 	acc = nn.accuracy(outputs,tunenames)
 	print('Acc:',acc)
 	totalacc+=acc
